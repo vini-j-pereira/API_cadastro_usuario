@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json())
 const port = 3000;
 
-mongoose.connect('mongodb://localhost:27017/futbot', {
+mongoose.connect('mongodb://localhost:5500/createAcount.html', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
