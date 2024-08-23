@@ -5,12 +5,18 @@ const app = express();
 app.use(express.json())
 const port = 3000;
 
+mongoose.connect('mongodb://localhost:27017/futbot', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
+
 
 const UserRegister = mongoose.model('UserRegister', {
     email: String,
     user: String,
     passworld: String
 });
+
 
 
 app.get("/", async (req, res) => {
