@@ -15,7 +15,24 @@ const UserRegister = mongoose.model('UserRegister', {
 
 app.get("/", async (req, res) => {
     const userRegister = await UserRegister.find()
-    res.send(userRegister)
+    return res.send(userRegister)
+})
+
+app.delete("/:id", async (req, res) => {
+    const userRegister = await UserRegister.findByIdAndDelete(req.params.id)
+    return res.send(userRegister)
+})
+
+app.put("/:id", async(req, res) => {
+    const userRegister = await UserRegister.findByIdAndUpdate(req.params.id, {
+        email: req.body.email,
+        user: req.body.user,
+        passworld: req.body.passworld
+    }, {
+        new: true
+    })
+
+    return res.send(userRegister)
 })
 
 app.post("/", async (req, res) => {
@@ -26,7 +43,7 @@ app.post("/", async (req, res) => {
     })
 
     await userRegister.save()
-    res.send(userRegister)
+    return res.send(userRegister)
 })
 
 app.listen(port, () => {
