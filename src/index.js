@@ -22,14 +22,14 @@ mongoose.connect('mongodb+srv://viniciusjosepereira:nPjlFE38EiPrVfgY@api-cadastr
 
 const UserRegister = mongoose.model('UserRegister', {
     email: String,
-    user: String,
+    telefone: Number,
     password: String
 });
 
 app.post("/", async (req, res) => {
     try {
-        const { email, user, password } = req.body;
-        const newUser = new UserRegister({ email, user, password });
+        const { email, telefone, password } = req.body;
+        const newUser = new UserRegister({ email, telefone, password });
         await newUser.save();
         res.status(201).send(newUser);
     } catch (error) {
@@ -57,10 +57,10 @@ app.delete("/:id", async (req, res) => {
 
 app.put("/:id", async (req, res) => {
     try {
-        const { email, user, password } = req.body;
+        const { email, telefone, password } = req.body;
         const updatedUser = await UserRegister.findByIdAndUpdate(req.params.id, {
             email,
-            user,
+            telefone,
             password
         }, { new: true });
         
