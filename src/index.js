@@ -70,9 +70,14 @@ app.put("/:id", async (req, res) => {
     }
 });
 
-app.listen(port, () => {
+try {
+    app.listen(port, () => {
     console.log(`App running on http://localhost:${port}`);
 });
+} catch (error) {
+    console.error("Erro ao iniciar o servidor:", error);
+}
+
 
 //Parte de validação do login do usuario 
 
@@ -84,31 +89,31 @@ app.post("/login", async (req, res) => {
         console.log('Dados recebidos:', { email, password });
 
         //procurando o usuário pelo email
-        const user = await UserRegister.findOne({ email: email.trim() });
+        const UserRegister = await UserRegister.findOne({ email });
         console.log('Usuário encontrado:', user);
 
-        if(!user) {
+        if(!UserRegister) {
             //Se o usuário não for encontrado, retornar erro
             console.log('Usuário não encontrado');
-            return res.status(404).send('Usuário não encontrado');
+            return res.status(404).json({error: "Usuário não encontrado"});
 
         }
 
         //Verificando se a senha está correta
-        if(user.password !== password) {
+        if(UserRegister.password !== password) {
             console.log('Senha incorreta');
-            return res.status(401).send('Senha incorreta');
+            return res.status(401).json({error:'Senha incorreta'});
 
         }
 
         //Se tudo estiver correto, sucesso!
         console.log('Login bem-sucedido');
-        res.status(200).send('Login bem-sucedido');
+        return res.jason({ message: 'Login bem-sucedido'});
 
     } catch(error) {
         //Capturando e logando qualquer erro
         console.error('Erro ao realizar login:', error);
-        res.status(500).send('Erro ao realizar login');
+        return res.status(500).jason({error: 'Erro ao realizar login'});
     }
 });
 
