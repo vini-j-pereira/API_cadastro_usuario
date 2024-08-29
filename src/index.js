@@ -22,7 +22,7 @@ mongoose.connect('mongodb+srv://viniciusjosepereira:nPjlFE38EiPrVfgY@api-cadastr
 
 const UserRegister = mongoose.model('UserRegister', {
     email: String,
-    telefone: Number,
+    telefone: String,
     password: String
 });
 
@@ -89,10 +89,10 @@ app.post("/login", async (req, res) => {
         console.log('Dados recebidos:', { email, password });
 
         //procurando o usuário pelo email
-        const UserRegister = await UserRegister.findOne({ email });
+        const user = await UserRegister.findOne({ email });
         console.log('Usuário encontrado:', user);
 
-        if(!UserRegister) {
+        if(!user) {
             //Se o usuário não for encontrado, retornar erro
             console.log('Usuário não encontrado');
             return res.status(404).json({error: "Usuário não encontrado"});
@@ -100,7 +100,7 @@ app.post("/login", async (req, res) => {
         }
 
         //Verificando se a senha está correta
-        if(UserRegister.password !== password) {
+        if(user.password !== password) {
             console.log('Senha incorreta');
             return res.status(401).json({error:'Senha incorreta'});
 
@@ -113,7 +113,7 @@ app.post("/login", async (req, res) => {
     } catch(error) {
         //Capturando e logando qualquer erro
         console.error('Erro ao realizar login:', error);
-        return res.status(500).jason({error: 'Erro ao realizar login'});
+        return res.status(500).json({error: 'Erro ao realizar login'});
     }
 });
 
