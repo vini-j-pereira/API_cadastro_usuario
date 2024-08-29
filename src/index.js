@@ -108,7 +108,7 @@ app.post("/login", async (req, res) => {
 
         //Se tudo estiver correto, sucesso!
         console.log('Login bem-sucedido');
-        return res.jason({ message: 'Login bem-sucedido'});
+        return res.json({ message: 'Login bem-sucedido'});
 
     } catch(error) {
         //Capturando e logando qualquer erro
