@@ -9,36 +9,61 @@ const cors = require("cors");
 const app = express();
 const port = 3000;
 
+//Models
+const UserRegister = require('./models/User')
+
 // Middleware para permitir o recebimento de JSON no corpo da requisição
 app.use(express.json());
 // Middleware para permitir requisições de outros domínios (CORS)
 app.use(cors());
 
-// Conectando ao MongoDB
-mongoose.connect('mongodb+srv://viniciusjosepereira:nPjlFE38EiPrVfgY@api-cadastro-usuario.unc0z.mongodb.net/?retryWrites=true&w=majority', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
-    console.log('Conectado ao MongoDB');
-}).catch((error) => {
-    console.error('Erro ao conectar ao MongoDB', error);
-});
+//Registrando Usuário
+app.post("/auth/register", async (req, res) => {
+    const { email, telefone, password } = req.body;
 
-const UserRegister = mongoose.model('UserRegister', {
-    email: String,
-    telefone: String,
-    password: String
-});
 
-app.post("/", async (req, res) => {
-    try {
-        const { email, telefone, password } = req.body;
-        const newUser = new UserRegister({ email, telefone, password });
-        await newUser.save();
-        res.status(201).send(newUser);
-    } catch (error) {
-        res.status(500).send('Erro ao cadastrar usuário');
+    //validando
+    if(!email) {
+        return res.status(422).json({ msg: 'O email é obrigatorio!' });
     }
+
+    if(!telefone) {
+        return res.status(422).json({ msg: 'O telefone é obrigatorio! '});
+    }
+
+    if(!password) {
+        return res.status(422).json({ msg: 'A senha é obrigatoria! '}); 
+    }
+
+    //Verificando se o usuario ja existe
+    const userExists = await UserRegister.findOne({ email: email})
+
+    if(userExists) {
+        return res.status(422).json({ msg: 'Por favor, utilize outro e-mail!'}); 
+    }
+
+    //Criando a senha
+    const salt = await bcrypt.genSalt(12);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    //Criando o ususario
+    const newUser = new UserRegister({
+        email,
+        telefone,
+        password,
+    })
+
+    try {
+
+        await newUser.save();
+        res.status(201).json({  msg: 'Usuário criado com sucesso!' });
+
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({ msg: 'Erro no servidor, tente novamente mais tarde!'});
+
+    }
+    
 });
 
 app.get("/", async (req, res) => {
@@ -73,14 +98,17 @@ app.put("/:id", async (req, res) => {
     }
 });
 
-try {
-    app.listen(port, () => {
-    console.log(`App running on http://localhost:${port}`);
-});
-} catch (error) {
-    console.error("Erro ao iniciar o servidor:", error);
-}
+//Conectando
 
+const dbUser = process.env.DB_USER
+const dbPassword = process.env.DB_PASS
+
+mongoose.connect(`mongodb+srv://viniciusjosepereira:nPjlFE38EiPrVfgY@api-cadastro-usuario.unc0z.mongodb.net/?retryWrites=true&w=majority`,).then(() => {
+    app.listen(port);
+    console.log('Conectou ao Banco!')
+
+})
+.catch((err) => console.log(err))
 
 //Parte de validação do login do usuario 
 
