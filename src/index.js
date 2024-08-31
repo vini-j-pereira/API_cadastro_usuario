@@ -1,5 +1,9 @@
+// Imports
+require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 
 const app = express();
@@ -39,10 +43,9 @@ app.post("/", async (req, res) => {
 
 app.get("/", async (req, res) => {
     try {
-        const users = await UserRegister.find();
-        res.status(200).send(users);
+        res.status(200).json({ msg: 'Bem vindo a nossa API!'});
     } catch (error) {
-        res.status(500).send('Erro ao buscar usuários');
+        res.status(500).json({ msg: 'Erro ao buscar usuários'});
     }
 });
 
