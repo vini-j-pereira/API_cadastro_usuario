@@ -21,7 +21,6 @@ app.use(cors());
 app.post("/auth/register", async (req, res) => {
     const { email, telefone, password } = req.body;
 
-
     //validando
     if(!email) {
         return res.status(422).json({ msg: 'O email é obrigatorio!' });
