@@ -49,7 +49,7 @@ app.post("/auth/register", async (req, res) => {
     const newUser = new UserRegister({
         email,
         telefone,
-        password,
+        password: passwordHash,
     })
 
     try {
@@ -99,10 +99,10 @@ app.put("/:id", async (req, res) => {
 
 //Conectando
 
-const dbUser = process.env.DB_USER
-const dbPassword = process.env.DB_PASS
+const dbUser = process.env.DB_USER;
+const dbPassword = process.env.DB_PASS;
 
-mongoose.connect(`mongodb+srv://viniciusjosepereira:nPjlFE38EiPrVfgY@api-cadastro-usuario.unc0z.mongodb.net/?retryWrites=true&w=majority`,).then(() => {
+mongoose.connect(`mongodb+srv://${dbUser}:${dbPassword}@api-cadastro-usuario.unc0z.mongodb.net/?retryWrites=true&w=majority`,).then(() => {
     app.listen(port);
     console.log('Conectou ao Banco!')
 
@@ -111,39 +111,87 @@ mongoose.connect(`mongodb+srv://viniciusjosepereira:nPjlFE38EiPrVfgY@api-cadastr
 
 //Parte de validação do login do usuario 
 
-app.post("/login", async (req, res) => {
+// app.post("/login", async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
+
+//         //logando os dados recebidos
+//         console.log('Dados recebidos:', { email, password });
+
+//         //procurando o usuário pelo email
+//         const user = await UserRegister.findOne({ email });
+//         console.log('Usuário encontrado:', user);
+
+//         if(!user) {
+//             //Se o usuário não for encontrado, retornar erro
+//             console.log('Usuário não encontrado');
+//             return res.status(404).json({error: "Usuário não encontrado"});
+//         }
+
+//         //Verificando se a senha está correta
+//         if(user.password !== password) {
+//             console.log('Senha incorreta');
+//             return res.status(401).json({error:'Senha incorreta'});
+
+//         }
+
+//         //Se tudo estiver correto, sucesso!
+//         console.log('Login bem-sucedido');
+//         return res.json({ message: 'Login bem-sucedido'});
+
+//     } catch(error) {
+//         //Capturando e logando qualquer erro
+//         console.error('Erro ao realizar login:', error);
+//         return res.status(500).json({error: 'Erro ao realizar login'});
+//     }
+//});
+
+//Login User
+app.post("/auth/login", async (req, res) => {
+    const { email, password } = req.body
+
+    //validando
+    if(!email) {
+        return res.status(422).json({ msg: 'O émail é obrigatorio!'});
+    }
+
+    if(!password) {
+        return res.status(422).json({ msg: 'A senha é obrigatoria'});
+    }
+
+    //checando se usuário existe
+    const user = await UserRegister.findOne({ email: email});
+
+    if(!user) {
+        return res.status(404).json({ msg: 'Usuário não encontrado'});
+    }
+
+    // //checando a senha
+    const checkPassword = await bcrypt.compare(password, user.password);
+
+
+    if(!checkPassword) {
+        return res.status(422).json({ msg: 'Senha inválida!'});
+    }
+
     try {
-        const { email, password } = req.body;
 
-        //logando os dados recebidos
-        console.log('Dados recebidos:', { email, password });
+        const secret = process.env.SECRET;
 
-        //procurando o usuário pelo email
-        const user = await UserRegister.findOne({ email });
-        console.log('Usuário encontrado:', user);
+        const token = jwt.sign({
+            id: user._id,
+        },
+        secret,
+    )
 
-        if(!user) {
-            //Se o usuário não for encontrado, retornar erro
-            console.log('Usuário não encontrado');
-            return res.status(404).json({error: "Usuário não encontrado"});
+    res.status(200).json({ msg: 'Autenticação realizada com sucesso', token })
 
-        }
+    } catch (error) {
+        console.log(error)
 
-        //Verificando se a senha está correta
-        if(user.password !== password) {
-            console.log('Senha incorreta');
-            return res.status(401).json({error:'Senha incorreta'});
+        res.status(500).json({ msg: 'Erro no servidor, tente novamente mais tarde!',
 
-        }
-
-        //Se tudo estiver correto, sucesso!
-        console.log('Login bem-sucedido');
-        return res.json({ message: 'Login bem-sucedido'});
-
-    } catch(error) {
-        //Capturando e logando qualquer erro
-        console.error('Erro ao realizar login:', error);
-        return res.status(500).json({error: 'Erro ao realizar login'});
+        })
     }
 });
 
